@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 
 st.set_page_config(
     page_title="Digital Twin Risk Simulator",
@@ -26,20 +25,9 @@ selected_result = risk_results[
 
 col1, col2, col3 = st.columns(3)
 
-col1.metric(
-    "Risk Score",
-    f"{selected_result['risk_score']:.1f}"
-)
-
-col2.metric(
-    "Loading",
-    f"{selected_result['loading_pct_scenario']:.1f}%"
-)
-
-col3.metric(
-    "Status",
-    selected_result["risk_category"]
-)
+col1.metric("Risk Score", f"{selected_result['risk_score']:.1f}")
+col2.metric("Loading", f"{selected_result['loading_pct_scenario']:.1f}%")
+col3.metric("Status", selected_result["risk_category"])
 
 st.info(
     f"Top driver untuk {selected_unit}: "
@@ -51,47 +39,26 @@ ranking = risk_results.sort_values(
     ascending=False
 )
 
-fig_ranking = px.bar(
-    ranking,
-    x="unit_name",
-    y="risk_score",
-    color="risk_category",
-    hover_data=[
-        "transformer_id",
-        "loading_pct_scenario",
-        "status_scenario",
-        "top_driver"
-    ],
-    title="Unit Risk Ranking"
+st.subheader("Unit Risk Ranking")
+st.bar_chart(
+    ranking.set_index("unit_name")["risk_score"]
 )
-
-st.plotly_chart(fig_ranking, use_container_width=True)
 
 st.subheader("Scenario Risk Results")
 st.dataframe(ranking, use_container_width=True)
 
 st.subheader("Monte Carlo Summary")
 
-fig_mc = px.bar(
-    monte_carlo_summary.sort_values(
-        by="p95",
-        ascending=False
-    ),
-    x="unit_name",
-    y=["mean_risk", "p80", "p95"],
-    barmode="group",
-    title="Monte Carlo Risk Summary"
+mc_sorted = monte_carlo_summary.sort_values(
+    by="p95",
+    ascending=False
 )
 
-st.plotly_chart(fig_mc, use_container_width=True)
-
-st.dataframe(
-    monte_carlo_summary.sort_values(
-        by="p95",
-        ascending=False
-    ),
-    use_container_width=True
+st.bar_chart(
+    mc_sorted.set_index("unit_name")[["mean_risk", "p80", "p95"]]
 )
+
+st.dataframe(mc_sorted, use_container_width=True)
 
 with st.expander("Method Note"):
     st.write(
@@ -101,3 +68,4 @@ with st.expander("Method Note"):
         menampilkan hasil scenario risk dan Monte Carlo summary.
         """
     )
+
