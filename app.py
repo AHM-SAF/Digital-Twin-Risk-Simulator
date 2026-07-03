@@ -101,4 +101,3 @@ with st.expander("Method Note"):
         menampilkan hasil scenario risk dan Monte Carlo summary.
         """
     )
-
